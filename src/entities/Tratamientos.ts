@@ -12,6 +12,7 @@ export class Tratamiento {
     @Column({ type: "text" })
     descripcion: string;
 
+    //Costo
     @Column({ type: "decimal", precision: 10, scale: 2 })
     costo: number;
 }
