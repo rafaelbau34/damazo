@@ -15,10 +15,10 @@ export class Cita {
   @PrimaryGeneratedColumn()
   id_cita: number;
 
-  @ManyToOne(() => Mascota, (mascota) => mascota.citas)
+  @ManyToOne(() => Mascota, (mascota: Mascota) => mascota.citas)
   mascota: Mascota;
 
-  @ManyToOne(() => Veterinario, (veterinario) => veterinario.citas)
+  @ManyToOne(() => Veterinario, (veterinario: Veterinario) => veterinario.citas)
   veterinario: Veterinario;
 
   @Column({ type: "datetime" })
@@ -27,6 +27,6 @@ export class Cita {
   @Column({ type: "text" })
   motivo: string;
 
-  @OneToMany(() => Tratamiento, (tratamiento) => tratamiento.cita)
+  @OneToMany(() => Tratamiento, (tratamiento: Tratamiento) => tratamiento.cita)
   tratamientos: Tratamiento[];
 }
