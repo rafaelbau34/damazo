@@ -1,5 +1,7 @@
 import "reflect-metadata"; // IMPORTA ESTO PRIMERO
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
+import { Mascota } from "./Mascota";
+import { Factura } from "./Factura";
 
 @Entity()
 export class Cliente {
