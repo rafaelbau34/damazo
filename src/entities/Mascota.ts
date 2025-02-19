@@ -5,8 +5,8 @@ import {
   ManyToOne,
   OneToMany,
 } from "typeorm";
-import { Cliente } from "./Cliente";
-import { Cita } from "./Cita";
+import { Cliente } from "./Cliente"; // 👈 Usa importación relativa, no absoluta
+import { Cita } from "./Cita"; // 👈 Usa importación relativa
 
 @Entity()
 export class Mascota {
@@ -29,5 +29,5 @@ export class Mascota {
   cliente: Cliente;
 
   @OneToMany(() => Cita, (cita) => cita.mascota)
-  citas: Cita[];
+  citas: Cita;
 }

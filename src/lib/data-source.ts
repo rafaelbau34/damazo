@@ -8,6 +8,7 @@ import { Tratamiento } from "app/entities/Tratamiento";
 import { Factura } from "app/entities/Factura";
 import { DetalleFactura } from "app/entities/DetalleFactura";
 import { Cliente } from "app/entities/Cliente";
+import { Mascota } from "app/entities/Mascota";
 
 export const AppDataSource = new DataSource({
   type: "mysql",
@@ -27,5 +28,6 @@ export const AppDataSource = new DataSource({
     Factura,
     DetalleFactura,
     Cliente,
+    Mascota,
   ], // Asegúrate de importar correctamente
 });
