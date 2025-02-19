@@ -18,3 +18,5 @@ export class Factura {
 
     @OneToMany(() => DetalleFactura, detalle => detalle.factura)
     detalles: DetalleFactura[];
+
+}
