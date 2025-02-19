@@ -22,6 +22,12 @@ export class Factura {
   @Column({ type: "decimal", precision: 10, scale: 2 })
   total: number;
 
+<<<<<<< HEAD
   @OneToMany(() => DetalleFactura, (detalle) => detalle.factura)
   detalles: DetalleFactura[];
+=======
+    @OneToMany(() => DetalleFactura, detalle => detalle.factura)
+    detalles: DetalleFactura[];
+
+>>>>>>> 5c372b633b02d686beac3b07f4967117b1dbd167
 }
