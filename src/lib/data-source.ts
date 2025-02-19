@@ -2,6 +2,12 @@ import { Alumno } from "app/entities/Alumnos";
 import { Animal } from "app/entities/Animales";
 import "reflect-metadata";
 import { DataSource } from "typeorm";
+import { Cita } from "app/entities/Cita";
+import { Veterinario } from "app/entities/Veterinario";
+import { Tratamiento } from "app/entities/Tratamiento";
+import { Factura } from "app/entities/Factura";
+import { DetalleFactura } from "app/entities/DetalleFactura";
+import { Cliente } from "app/entities/Cliente";
 
 export const AppDataSource = new DataSource({
   type: "mysql",
@@ -12,5 +18,14 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_NAME,
   synchronize: true,
   logging: false,
-  entities: [Alumno, Animal], // Asegúrate de importar correctamente
+  entities: [
+    Alumno,
+    Animal,
+    Cita,
+    Veterinario,
+    Tratamiento,
+    Factura,
+    DetalleFactura,
+    Cliente,
+  ], // Asegúrate de importar correctamente
 });
