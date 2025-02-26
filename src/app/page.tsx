@@ -1,5 +1,5 @@
 import { Button } from "app/components/ui/button";
-import Layout from "app/layout/Layout";
+import Layout from "app/Layout/Layout";
 
 export default function Home() {
   return (
