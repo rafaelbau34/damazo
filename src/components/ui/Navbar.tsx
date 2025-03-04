@@ -10,8 +10,8 @@ const Navbar: React.FC = () => {
         </Link>
         <ul className="flex space-x-4">
           <li>
-            <Link href="/" className="hover:text-gray-200">
-              Home
+            <Link href="cita" className="hover:text-gray-200">
+              Cita
             </Link>
           </li>
           <li>
