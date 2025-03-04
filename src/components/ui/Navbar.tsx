@@ -11,7 +11,7 @@ const Navbar: React.FC = () => {
         <ul className="flex space-x-4">
           <li>
             <Link href="cita" className="hover:text-gray-200">
-              Cita
+              Citas
             </Link>
           </li>
           <li>
