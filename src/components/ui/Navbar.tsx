@@ -24,6 +24,17 @@ const Navbar: React.FC = () => {
               Contact
             </Link>
           </li>
+
+          <li>
+            <Link href="/mascotas" className="hover:text-gray-200">
+              Mascotas
+            </Link>
+          </li>
+          <li>
+            <Link href="/clientes" className="hover:text-gray-200">
+              Clientes
+            </Link>
+          </li>
         </ul>
       </div>
     </nav>
