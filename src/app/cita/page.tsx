@@ -1,5 +1,6 @@
 "use client";
 
+import Layout from "app/Layout/Layout";
 import { useState, useEffect } from "react";
 
 interface Cita {
@@ -46,49 +47,51 @@ export default function CitasPage() {
   };
 
   return (
-    <div className="p-8 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Gestión de Citas</h1>
-      <form onSubmit={handleSubmit} className="mb-4 space-y-3">
-        <input
-          type="date"
-          name="fecha"
-          value={nuevaCita.fecha}
-          onChange={handleChange}
-          className="w-full p-2 border rounded"
-          required
-        />
-        <input
-          type="number"
-          name="mascotaId"
-          value={nuevaCita.mascotaId}
-          onChange={handleChange}
-          placeholder="ID de la mascota"
-          className="w-full p-2 border rounded"
-          required
-        />
-        <input
-          type="number"
-          name="veterinarioId"
-          value={nuevaCita.veterinarioId}
-          onChange={handleChange}
-          placeholder="ID del veterinario"
-          className="w-full p-2 border rounded"
-          required
-        />
-        <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-          Agendar Cita
-        </button>
-      </form>
-      <h2 className="text-xl font-semibold mt-6">Lista de Citas</h2>
-      <ul className="mt-3 space-y-2">
-        {citas.map((cita) => (
-          <li key={cita.id} className="border p-3 rounded shadow">
-            <p>Fecha: {cita.fecha}</p>
-            <p>Mascota ID: {cita.mascotaId}</p>
-            <p>Veterinario ID: {cita.veterinarioId}</p>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <Layout>
+      <div className="p-8 max-w-2xl mx-auto">
+        <h1 className="text-2xl font-bold mb-4">Gestión de Citas</h1>
+        <form onSubmit={handleSubmit} className="mb-4 space-y-3">
+          <input
+            type="date"
+            name="fecha"
+            value={nuevaCita.fecha}
+            onChange={handleChange}
+            className="w-full p-2 border rounded"
+            required
+          />
+          <input
+            type="number"
+            name="mascotaId"
+            value={nuevaCita.mascotaId}
+            onChange={handleChange}
+            placeholder="ID de la mascota"
+            className="w-full p-2 border rounded"
+            required
+          />
+          <input
+            type="number"
+            name="veterinarioId"
+            value={nuevaCita.veterinarioId}
+            onChange={handleChange}
+            placeholder="ID del veterinario"
+            className="w-full p-2 border rounded"
+            required
+          />
+          <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+            Agendar Cita
+          </button>
+        </form>
+        <h2 className="text-xl font-semibold mt-6">Lista de Citas</h2>
+        <ul className="mt-3 space-y-2">
+          {citas.map((cita) => (
+            <li key={cita.id} className="border p-3 rounded shadow">
+              <p>Fecha: {cita.fecha}</p>
+              <p>Mascota ID: {cita.mascotaId}</p>
+              <p>Veterinario ID: {cita.veterinarioId}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </Layout>
   );
 }
