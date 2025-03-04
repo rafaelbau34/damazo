@@ -10,7 +10,7 @@ const Navbar: React.FC = () => {
         </Link>
         <ul className="flex space-x-4">
           <li>
-            <Link href="cita" className="hover:text-gray-200">
+            <Link href="/cita" className="hover:text-gray-200">
               Cita
             </Link>
           </li>
@@ -22,6 +22,11 @@ const Navbar: React.FC = () => {
           <li>
             <Link href="/contact" className="hover:text-gray-200">
               Contact
+            </Link>
+          </li>
+          <li>
+            <Link href="/facturas" className="hover:text-gray-200">
+              Facturas
             </Link>
           </li>
         </ul>
