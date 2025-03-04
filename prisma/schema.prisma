@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+
+model Cliente {
+  id        Int      @id @default(autoincrement())
+  nombre    String   @db.VarChar(100)
+  apellido  String   @db.VarChar(100)
+  direccion String?
+  telefono  String   @db.VarChar(15)
+  email     String   @db.VarChar(100)
+  mascotas  Mascota[]
+  facturas  Factura[]
+}
+
+model Mascota {
+  id        Int      @id @default(autoincrement())
+  nombre    String   @db.VarChar(100)
+  especie   String   @db.VarChar(50)
+  raza      String   @db.VarChar(50)
+  edad      Int
+  clienteId Int
+  cliente   Cliente  @relation(fields: [clienteId], references: [id])
+  citas     Cita[]
+}
+
+model Veterinario {
+  id           Int      @id @default(autoincrement())
+  nombre       String   @db.VarChar(100)
+  apellido     String   @db.VarChar(100)
+  especialidad String   @db.VarChar(100)
+  telefono     String   @db.VarChar(15)
+  email        String   @db.VarChar(100)
+  citas        Cita[]
+}
+
+model Cita {
+  id            Int         @id @default(autoincrement())
+  mascotaId     Int
+  veterinarioId Int
+  fecha         DateTime
+  motivo        String?
+  mascota       Mascota     @relation(fields: [mascotaId], references: [id])
+  veterinario   Veterinario @relation(fields: [veterinarioId], references: [id])
+  tratamientos  Tratamiento[]
+}
+
+model Tratamiento {
+  id          Int       @id @default(autoincrement())
+  citaId      Int
+  descripcion String?
+  costo       Decimal   @db.Decimal(10,2)
+  cita        Cita      @relation(fields: [citaId], references: [id])
+  detalles    DetalleFactura[]
+}
+
+model Factura {
+  id        Int       @id @default(autoincrement())
+  clienteId Int
+  fecha     DateTime
+  total     Decimal   @db.Decimal(10,2)
+  cliente   Cliente   @relation(fields: [clienteId], references: [id])
+  detalles  DetalleFactura[]
+}
+
+model DetalleFactura {
+  id            Int        @id @default(autoincrement())
+  facturaId     Int
+  tratamientoId Int
+  cantidad      Int
+  subtotal      Decimal   @db.Decimal(10,2)
+  factura       Factura    @relation(fields: [facturaId], references: [id])
+  tratamiento   Tratamiento @relation(fields: [tratamientoId], references: [id])
+}
