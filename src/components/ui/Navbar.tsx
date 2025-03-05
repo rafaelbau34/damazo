@@ -20,8 +20,8 @@ const Navbar: React.FC = () => {
             </Link>
           </li>
           <li>
-            <Link href="/contact" className="hover:text-gray-200">
-              Contact
+            <Link href="/tratamiento" className="hover:text-gray-200">
+              tratamiento
             </Link>
           </li>
           <li>
