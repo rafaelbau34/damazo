@@ -5,7 +5,7 @@ export default function Home() {
   return (
     <>
       <Layout>
-        <h1>Hola</h1>
+        <h1>CLIENTES</h1>
         <Button>Ratón</Button>
       </Layout>
     </>

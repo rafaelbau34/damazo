@@ -14,11 +14,7 @@ const Navbar: React.FC = () => {
               Cita
             </Link>
           </li>
-          <li>
-            <Link href="/about" className="hover:text-gray-200">
-              About
-            </Link>
-          </li>
+
           <li>
             <Link href="/tratamiento" className="hover:text-gray-200">
               tratamiento
@@ -27,6 +23,11 @@ const Navbar: React.FC = () => {
           <li>
             <Link href="/facturas" className="hover:text-gray-200">
               Facturas
+            </Link>
+          </li>
+          <li>
+            <Link href="/mascotas" className="hover:text-gray-200">
+              Clientes/Mascotas
             </Link>
           </li>
         </ul>
