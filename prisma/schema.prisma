@@ -78,3 +78,11 @@ model DetalleFactura {
   factura       Factura    @relation(fields: [facturaId], references: [id])
   tratamiento   Tratamiento @relation(fields: [tratamientoId], references: [id])
 }
+
+model User {
+  id        String  @id @default(uuid())
+  email     String  @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+}

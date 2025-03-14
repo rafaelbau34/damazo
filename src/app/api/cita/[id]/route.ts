@@ -1,4 +1,4 @@
-import { prisma } from "app/lib/prisma";
+import prisma from "app/lib/prisma";
 import { NextResponse } from "next/server";
 
 // ✅ Obtener todas las citas (GET /api/citas)
@@ -17,7 +17,10 @@ export async function GET() {
 }
 
 // ✅ Obtener una cita por ID (GET /api/citas/[id])
-export async function GET_BY_ID(req: Request, { params }: { params: { id: string } }) {
+export async function GET_BY_ID(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   try {
     const id = Number(params.id);
     if (isNaN(id)) {
@@ -30,7 +33,10 @@ export async function GET_BY_ID(req: Request, { params }: { params: { id: string
     });
 
     if (!cita) {
-      return NextResponse.json({ error: "Cita no encontrada" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Cita no encontrada" },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json({ id: cita.id, ...cita }, { status: 200 });
@@ -60,9 +66,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ id: cita.id, ...cita }, { status: 201 });
   } catch {
-    return NextResponse.json(
-      { error: "Error al crear cita" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error al crear cita" }, { status: 500 });
   }
 }

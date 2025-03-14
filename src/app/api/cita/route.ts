@@ -1,25 +1,28 @@
-import { prisma } from "app/lib/prisma";
+import prisma from "app/lib/prisma";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-    try {
-      const citas = await prisma.cita.findMany({
-        include: {
-          tratamientos: true, // Mantén solo relaciones existentes
-        },
-      });
-      return NextResponse.json(citas, { status: 200 });
-    } catch (error) {
-      console.error("Error en GET /api/citas:", error);
-      return NextResponse.json(
-        { error: "Error al obtener citas" },
-        { status: 500 }
-      );
-    }
+  try {
+    const citas = await prisma.cita.findMany({
+      include: {
+        tratamientos: true, // Mantén solo relaciones existentes
+      },
+    });
+    return NextResponse.json(citas, { status: 200 });
+  } catch (error) {
+    console.error("Error en GET /api/citas:", error);
+    return NextResponse.json(
+      { error: "Error al obtener citas" },
+      { status: 500 }
+    );
   }
-  
+}
+
 // ✅ Obtener una cita por ID (GET /api/citas/[id])
-export async function GET_BY_ID(req: Request, { params }: { params: { id: string } }) {
+export async function GET_BY_ID(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   try {
     const id = Number(params.id);
     if (isNaN(id)) {
@@ -32,7 +35,10 @@ export async function GET_BY_ID(req: Request, { params }: { params: { id: string
     });
 
     if (!cita) {
-      return NextResponse.json({ error: "Cita no encontrada" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Cita no encontrada" },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json({ id: cita.id, ...cita }, { status: 200 });
@@ -62,9 +68,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ id: cita.id, ...cita }, { status: 201 });
   } catch {
-    return NextResponse.json(
-      { error: "Error al crear cita" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error al crear cita" }, { status: 500 });
   }
 }
