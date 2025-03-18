@@ -1,4 +1,4 @@
-import { prisma } from "app/lib/prisma";
+import prisma from "app/lib/prisma";
 import { NextResponse } from "next/server";
 
 // ✅ Obtener todos los tratamientos (GET /api/tratamientos)
@@ -17,7 +17,10 @@ export async function GET() {
 }
 
 // ✅ Obtener un tratamiento por ID (GET /api/tratamientos/[id])
-export async function GET_BY_ID(req: Request, { params }: { params: { id: string } }) {
+export async function GET_BY_ID(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   try {
     const id = Number(params.id);
     if (isNaN(id)) {
@@ -30,7 +33,10 @@ export async function GET_BY_ID(req: Request, { params }: { params: { id: string
     });
 
     if (!tratamiento) {
-      return NextResponse.json({ error: "Tratamiento no encontrado" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Tratamiento no encontrado" },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json(tratamiento, { status: 200 });
@@ -66,4 +72,3 @@ export async function POST(req: Request) {
     );
   }
 }
-
