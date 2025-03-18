@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     const citas = await prisma.cita.findMany({
-      include: { paciente: true, tratamientos: true },
+      include: { mascota: true, veterinario: true, tratamientos: true },
     });
     return NextResponse.json(citas, { status: 200 });
   } catch {
@@ -29,7 +29,11 @@ export async function GET_BY_ID(
 
     const cita = await prisma.cita.findUnique({
       where: { id },
-      include: { paciente: true, tratamientos: true },
+      include: {
+        mascota: true, // Relación con Mascota
+        veterinario: true, // Relación con Veterinario
+        tratamientos: true,
+      },
     });
 
     if (!cita) {
@@ -39,7 +43,7 @@ export async function GET_BY_ID(
       );
     }
 
-    return NextResponse.json({ id: cita.id, ...cita }, { status: 200 });
+    return NextResponse.json(cita, { status: 200 }); // Solo devolver cita
   } catch {
     return NextResponse.json(
       { error: "Error al obtener cita" },
@@ -51,9 +55,9 @@ export async function GET_BY_ID(
 // ✅ Crear una nueva cita (POST /api/citas)
 export async function POST(req: Request) {
   try {
-    const { pacienteId, fecha, hora, motivo } = await req.json();
+    const { mascotaId, veterinarioId, fecha, motivo } = await req.json();
 
-    if (!pacienteId || !fecha || !hora) {
+    if (!mascotaId || !veterinarioId || !fecha) {
       return NextResponse.json(
         { error: "Campos obligatorios faltantes" },
         { status: 400 }
@@ -61,10 +65,10 @@ export async function POST(req: Request) {
     }
 
     const cita = await prisma.cita.create({
-      data: { pacienteId, fecha, hora, motivo },
+      data: { mascotaId, veterinarioId, fecha, motivo },
     });
 
-    return NextResponse.json({ id: cita.id, ...cita }, { status: 201 });
+    return NextResponse.json(cita, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Error al crear cita" }, { status: 500 });
   }
