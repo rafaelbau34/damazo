@@ -1,11 +1,13 @@
 "use client";
+import useAuthStore from "app/stores/useAuthStore";
 import { useState } from "react";
-import useAuthStore from "app/app/stores/useAuthStore";
+import { useRouter } from "next/navigation";
 
 export default function AuthForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const login = useAuthStore((state) => state.login);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,7 +18,11 @@ export default function AuthForm() {
     });
 
     const data = await res.json();
-    if (res.ok) login(data.user, data.token);
+    console.log(data);
+    if (res.ok) {
+      login(data.user, data.token);
+      router.push("/dashboard");
+    }
   };
 
   return (
