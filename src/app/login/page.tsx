@@ -19,7 +19,6 @@ export default function Login() {
           CAN GALÁN
         </h2>
 
-        {/* Aquí se usa el componente AuthForm en lugar del formulario original */}
         <AuthForm />
       </Card>
     </div>
