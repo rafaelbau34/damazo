@@ -1,20 +1,18 @@
-import Footer from "app/components/ui/Footer";
-import Navbar from "app/components/ui/Navbar";
-import React from "react";
+"use client";
 
-import { ReactNode } from "react";
+import { Navbar } from "app/components/ui/Navbar";
+import { Footer } from "app/components/ui/Footer";
 
 interface LayoutProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
-const Layout = ({ children }: LayoutProps) => {
-  return (
-    <>
-      <Navbar />
-      <main className="p-2">{children}</main>
-      <Footer />
-    </>
-  );
-};
 
-export default Layout;
+export function Layout({ children }: LayoutProps) {
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      <main className="flex-1 pt-16 pb-8">{children}</main>
+      <Footer />
+    </div>
+  );
+}

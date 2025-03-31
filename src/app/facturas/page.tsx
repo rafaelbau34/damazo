@@ -1,6 +1,6 @@
 "use client";
 
-import Layout from "app/Layout/Layout";
+import { Layout } from "app/layout/Layout";
 import React, { useState, useEffect } from "react";
 
 interface Factura {

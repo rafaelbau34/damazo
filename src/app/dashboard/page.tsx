@@ -2,7 +2,7 @@
 
 import { Button } from "app/components/ui/button";
 import Link from "next/link";
-import Layout from "app/layout/Layout";
+import { Layout } from "app/layout/Layout";
 
 export default function HomePage() {
   return (

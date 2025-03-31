@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import Layout from "app/layout/Layout";
+import { Layout } from "app/layout/Layout";
 import { Button } from "app/components/ui/button";
 import {
   Card,
