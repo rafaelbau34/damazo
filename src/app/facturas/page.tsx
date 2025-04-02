@@ -54,7 +54,7 @@ const Facturas: React.FC = () => {
         <div className="border rounded-lg overflow-hidden shadow-md">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-blue-600 text-white">
+              <tr className="bg-red-600 text-white">
                 <th className="p-3">#</th>
                 <th className="p-3">Cliente</th>
                 <th className="p-3">Fecha</th>
