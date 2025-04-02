@@ -13,7 +13,13 @@ import {
 import { Label } from "app/components/ui/label";
 import { Input } from "app/components/ui/input";
 import { Separator } from "app/components/ui/separator";
-import { PlusCircle, Trash2, PawPrint } from "lucide-react";
+import {
+  PlusCircle,
+  Trash2,
+  PawPrint,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 
 type Cliente = {
   id: number;
@@ -54,6 +60,7 @@ export default function ClientesMascotas() {
     "clientes"
   );
   const [isAddingClient, setIsAddingClient] = useState(false);
+  const [showPetForms, setShowPetForms] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
     fetchClientes();
@@ -120,7 +127,7 @@ export default function ClientesMascotas() {
         ...prev,
         [clienteId]: { nombre: "", especie: "", raza: "", edad: 0 },
       }));
-
+      setShowPetForms((prev) => ({ ...prev, [clienteId]: false }));
       fetchClientes();
     } catch (error) {
       console.error(error);
@@ -153,6 +160,13 @@ export default function ClientesMascotas() {
       console.error(error);
     }
   }
+
+  const togglePetForm = (clienteId: number) => {
+    setShowPetForms((prev) => ({
+      ...prev,
+      [clienteId]: !prev[clienteId],
+    }));
+  };
 
   return (
     <Layout>
@@ -273,10 +287,7 @@ export default function ClientesMascotas() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {clientes.map((cliente) => (
-                <Card
-                  key={cliente.id}
-                  className="hover:shadow-md transition-shadow"
-                >
+                <Card key={cliente.id} className="flex flex-col h-full">
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <div>
@@ -297,7 +308,8 @@ export default function ClientesMascotas() {
                       </Button>
                     </div>
                   </CardHeader>
-                  <CardContent>
+
+                  <CardContent className="flex-1">
                     <div className="space-y-2">
                       <p className="text-sm">
                         <span className="font-medium">Teléfono:</span>{" "}
@@ -311,27 +323,39 @@ export default function ClientesMascotas() {
 
                     <Separator className="my-4" />
 
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
                         <h3 className="font-semibold">Mascotas</h3>
                         <Button
                           variant="ghost"
-                          className="text-primary h-8 px-2"
-                          onClick={() => setActiveTab("mascotas")}
+                          size="sm"
+                          className="text-primary gap-1"
+                          onClick={() => togglePetForm(cliente.id)}
                         >
-                          Ver todas
+                          {showPetForms[cliente.id] ? (
+                            <>
+                              <ChevronUp size={14} />
+                              Ocultar
+                            </>
+                          ) : (
+                            <>
+                              <PlusCircle size={14} />
+                              Agregar
+                            </>
+                          )}
                         </Button>
                       </div>
-                      {cliente.mascotas?.length ? (
-                        <ul className="space-y-2">
-                          {cliente.mascotas.map((mascota) => (
-                            <li
+
+                      <div className="space-y-2 max-h-40 overflow-y-auto">
+                        {cliente.mascotas?.length ? (
+                          cliente.mascotas.map((mascota) => (
+                            <div
                               key={mascota.id}
                               className="flex items-center justify-between p-2 bg-muted/50 rounded"
                             >
                               <div className="flex items-center gap-2">
                                 <PawPrint size={14} className="text-primary" />
-                                <span>
+                                <span className="text-sm">
                                   {mascota.nombre} ({mascota.especie},{" "}
                                   {mascota.edad} años)
                                 </span>
@@ -344,100 +368,103 @@ export default function ClientesMascotas() {
                               >
                                 <Trash2 size={14} />
                               </Button>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-sm text-muted-foreground">
-                          No tiene mascotas registradas
-                        </p>
-                      )}
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-sm text-muted-foreground">
+                            No tiene mascotas registradas
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </CardContent>
-                  <CardFooter>
-                    <form
-                      onSubmit={(e) => handleSubmitMascota(e, cliente.id)}
-                      className="w-full space-y-3"
-                    >
-                      <h4 className="text-sm font-medium">Agregar Mascota</h4>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="col-span-2">
-                          <Input
-                            placeholder="Nombre"
-                            value={formMascota[cliente.id]?.nombre || ""}
-                            onChange={(e) =>
-                              setFormMascota((prev) => ({
-                                ...prev,
-                                [cliente.id]: {
-                                  ...prev[cliente.id],
-                                  nombre: e.target.value,
-                                },
-                              }))
-                            }
-                            required
-                            className="h-9" // Adjusted height instead of size="sm"
-                          />
+
+                  {showPetForms[cliente.id] && (
+                    <CardFooter className="border-t pt-4">
+                      <form
+                        onSubmit={(e) => handleSubmitMascota(e, cliente.id)}
+                        className="w-full space-y-3"
+                      >
+                        <h4 className="text-sm font-medium">Nueva Mascota</h4>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="col-span-2">
+                            <Input
+                              placeholder="Nombre"
+                              value={formMascota[cliente.id]?.nombre || ""}
+                              onChange={(e) =>
+                                setFormMascota((prev) => ({
+                                  ...prev,
+                                  [cliente.id]: {
+                                    ...prev[cliente.id],
+                                    nombre: e.target.value,
+                                  },
+                                }))
+                              }
+                              required
+                              className="h-9"
+                            />
+                          </div>
+                          <div>
+                            <Input
+                              placeholder="Especie"
+                              value={formMascota[cliente.id]?.especie || ""}
+                              onChange={(e) =>
+                                setFormMascota((prev) => ({
+                                  ...prev,
+                                  [cliente.id]: {
+                                    ...prev[cliente.id],
+                                    especie: e.target.value,
+                                  },
+                                }))
+                              }
+                              required
+                              className="h-9"
+                            />
+                          </div>
+                          <div>
+                            <Input
+                              placeholder="Raza"
+                              value={formMascota[cliente.id]?.raza || ""}
+                              onChange={(e) =>
+                                setFormMascota((prev) => ({
+                                  ...prev,
+                                  [cliente.id]: {
+                                    ...prev[cliente.id],
+                                    raza: e.target.value,
+                                  },
+                                }))
+                              }
+                              required
+                              className="h-9"
+                            />
+                          </div>
+                          <div>
+                            <Input
+                              type="number"
+                              placeholder="Edad"
+                              value={formMascota[cliente.id]?.edad || ""}
+                              onChange={(e) =>
+                                setFormMascota((prev) => ({
+                                  ...prev,
+                                  [cliente.id]: {
+                                    ...prev[cliente.id],
+                                    edad: Number(e.target.value),
+                                  },
+                                }))
+                              }
+                              required
+                              className="h-9"
+                            />
+                          </div>
+                          <div className="col-span-2">
+                            <Button type="submit" className="w-full h-9">
+                              Guardar Mascota
+                            </Button>
+                          </div>
                         </div>
-                        <div>
-                          <Input
-                            placeholder="Especie"
-                            value={formMascota[cliente.id]?.especie || ""}
-                            onChange={(e) =>
-                              setFormMascota((prev) => ({
-                                ...prev,
-                                [cliente.id]: {
-                                  ...prev[cliente.id],
-                                  especie: e.target.value,
-                                },
-                              }))
-                            }
-                            required
-                            className="h-9"
-                          />
-                        </div>
-                        <div>
-                          <Input
-                            placeholder="Raza"
-                            value={formMascota[cliente.id]?.raza || ""}
-                            onChange={(e) =>
-                              setFormMascota((prev) => ({
-                                ...prev,
-                                [cliente.id]: {
-                                  ...prev[cliente.id],
-                                  raza: e.target.value,
-                                },
-                              }))
-                            }
-                            required
-                            className="h-9"
-                          />
-                        </div>
-                        <div>
-                          <Input
-                            type="number"
-                            placeholder="Edad"
-                            value={formMascota[cliente.id]?.edad || ""}
-                            onChange={(e) =>
-                              setFormMascota((prev) => ({
-                                ...prev,
-                                [cliente.id]: {
-                                  ...prev[cliente.id],
-                                  edad: Number(e.target.value),
-                                },
-                              }))
-                            }
-                            required
-                            className="h-9"
-                          />
-                        </div>
-                        <div className="col-span-2">
-                          <Button type="submit" className="w-full h-9">
-                            Agregar Mascota
-                          </Button>
-                        </div>
-                      </div>
-                    </form>
-                  </CardFooter>
+                      </form>
+                    </CardFooter>
+                  )}
                 </Card>
               ))}
             </div>
