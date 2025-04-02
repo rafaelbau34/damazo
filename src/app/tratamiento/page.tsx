@@ -26,18 +26,18 @@ export default function TratamientosPage() {
   });
 
   const fetchTratamientos = async () => {
-    setEstado({ ...estado, loading: true, error: null });
+    setEstado((prevEstado) => ({ ...prevEstado, loading: true, error: null }));
     try {
       const res = await fetch("http://localhost:3000/api/tratamiento");
       if (!res.ok) throw new Error("Error al obtener tratamientos");
       const data: Tratamiento[] = await res.json();
       setEstado({ tratamientos: data, loading: false, error: null });
     } catch (error: any) {
-      setEstado({
-        ...estado,
+      setEstado((prevEstado) => ({
+        ...prevEstado,
         loading: false,
         error: "Hubo un problema al cargar los tratamientos.",
-      });
+      }));
       console.error(error);
     }
   };
@@ -50,7 +50,11 @@ export default function TratamientosPage() {
     <Layout>
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-4">Lista de Tratamientos</h1>
-        <Button onClick={fetchTratamientos} disabled={estado.loading}>
+        <Button
+          onClick={fetchTratamientos}
+          disabled={estado.loading}
+          className="bg-red-500 hover:bg-red-700 text-white"
+        >
           {estado.loading ? "Cargando..." : "Recargar"}
         </Button>
 
@@ -62,23 +66,12 @@ export default function TratamientosPage() {
             <p className="text-gray-500">No se encontraron tratamientos.</p>
           ) : (
             estado.tratamientos.map((tratamiento) => (
-              <Card
-                key={tratamiento.id}
-                className="p-4 border rounded-lg shadow-md"
-              >
+              <Card key={tratamiento.id} className="p-4 border rounded-lg shadow-md">
                 <CardContent>
-                  <h2 className="text-xl font-semibold">
-                    {tratamiento.nombre}
-                  </h2>
-                  <p className="text-gray-600">
-                    {tratamiento.descripcion || "Sin descripción"}
-                  </p>
-                  <p className="text-green-600 font-bold">
-                    ${tratamiento.precio}
-                  </p>
-                  <p className="text-gray-500">
-                    Duración: {tratamiento.duracion} min
-                  </p>
+                  <h2 className="text-xl font-semibold">{tratamiento.nombre}</h2>
+                  <p className="text-gray-600">{tratamiento.descripcion || "Sin descripción"}</p>
+                  <p className="text-green-600 font-bold">${tratamiento.precio}</p>
+                  <p className="text-gray-500">Duración: {tratamiento.duracion} min</p>
                   <p
                     className={`mt-2 font-semibold ${
                       tratamiento.activo ? "text-blue-600" : "text-red-600"
