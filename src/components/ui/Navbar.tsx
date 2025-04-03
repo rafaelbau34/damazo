@@ -8,6 +8,7 @@ import {
   Stethoscope,
   FileText,
   Users,
+  UserCog,
 } from "lucide-react";
 
 export function Navbar() {
@@ -37,7 +38,7 @@ export function Navbar() {
     {
       name: "Veterinarios",
       href: "/veterinarios",
-      icon: <PawPrint className="h-5 w-5" />,
+      icon: <UserCog className="h-5 w-5" />,
     },
   ];
 

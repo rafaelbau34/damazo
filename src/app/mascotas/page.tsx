@@ -13,13 +13,17 @@ import {
 import { Label } from "app/components/ui/label";
 import { Input } from "app/components/ui/input";
 import { Separator } from "app/components/ui/separator";
+import { PlusCircle, Trash2, PawPrint, ChevronUp } from "lucide-react";
 import {
-  PlusCircle,
-  Trash2,
-  PawPrint,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "app/components/ui/alert-dialog";
 
 type Cliente = {
   id: number;
@@ -61,6 +65,12 @@ export default function ClientesMascotas() {
   );
   const [isAddingClient, setIsAddingClient] = useState(false);
   const [showPetForms, setShowPetForms] = useState<Record<number, boolean>>({});
+  const [deleteDialog, setDeleteDialog] = useState({
+    open: false,
+    type: "", // 'cliente' or 'mascota'
+    id: 0,
+    message: "",
+  });
 
   useEffect(() => {
     fetchClientes();
@@ -134,30 +144,43 @@ export default function ClientesMascotas() {
     }
   }
 
-  async function handleDeleteCliente(id: number) {
-    if (
-      !confirm(
-        "¿Estás seguro de que deseas eliminar este cliente y todas sus mascotas?"
-      )
-    )
-      return;
-    try {
-      const res = await fetch(`/api/clientes/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Error al eliminar cliente");
-      fetchClientes();
-    } catch (error) {
-      console.error(error);
-    }
+  function confirmDeleteCliente(id: number) {
+    setDeleteDialog({
+      open: true,
+      type: "cliente",
+      id,
+      message:
+        "¿Estás seguro de que deseas eliminar este cliente y todas sus mascotas?",
+    });
   }
 
-  async function handleDeleteMascota(id: number) {
-    if (!confirm("¿Estás seguro de que deseas eliminar esta mascota?")) return;
+  function confirmDeleteMascota(id: number) {
+    setDeleteDialog({
+      open: true,
+      type: "mascota",
+      id,
+      message: "¿Estás seguro de que deseas eliminar esta mascota?",
+    });
+  }
+
+  async function handleDeleteConfirmed() {
     try {
-      const res = await fetch(`/api/mascotas/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Error al eliminar mascota");
+      if (deleteDialog.type === "cliente") {
+        const res = await fetch(`/api/clientes/${deleteDialog.id}`, {
+          method: "DELETE",
+        });
+        if (!res.ok) throw new Error("Error al eliminar cliente");
+      } else {
+        const res = await fetch(`/api/mascotas/${deleteDialog.id}`, {
+          method: "DELETE",
+        });
+        if (!res.ok) throw new Error("Error al eliminar mascota");
+      }
       fetchClientes();
     } catch (error) {
       console.error(error);
+    } finally {
+      setDeleteDialog({ open: false, type: "", id: 0, message: "" });
     }
   }
 
@@ -171,6 +194,29 @@ export default function ClientesMascotas() {
   return (
     <Layout>
       <div className="p-6 max-w-7xl mx-auto">
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog
+          open={deleteDialog.open}
+          onOpenChange={(open) =>
+            setDeleteDialog((prev) => ({ ...prev, open }))
+          }
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirmar eliminación</AlertDialogTitle>
+              <AlertDialogDescription>
+                {deleteDialog.message}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDeleteConfirmed}>
+                Eliminar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Gestión de Clientes y Mascotas</h1>
           <div className="flex space-x-2">
@@ -302,7 +348,7 @@ export default function ClientesMascotas() {
                         variant="ghost"
                         size="icon"
                         className="text-destructive hover:text-destructive"
-                        onClick={() => handleDeleteCliente(cliente.id)}
+                        onClick={() => confirmDeleteCliente(cliente.id)}
                       >
                         <Trash2 size={16} />
                       </Button>
@@ -364,7 +410,7 @@ export default function ClientesMascotas() {
                                 variant="ghost"
                                 size="icon"
                                 className="h-6 w-6 text-destructive hover:text-destructive"
-                                onClick={() => handleDeleteMascota(mascota.id)}
+                                onClick={() => confirmDeleteMascota(mascota.id)}
                               >
                                 <Trash2 size={14} />
                               </Button>
@@ -512,7 +558,7 @@ export default function ClientesMascotas() {
                                     size="icon"
                                     className="h-8 w-8 text-destructive hover:text-destructive"
                                     onClick={() =>
-                                      handleDeleteMascota(mascota.id)
+                                      confirmDeleteMascota(mascota.id)
                                     }
                                   >
                                     <Trash2 size={14} />
