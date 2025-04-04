@@ -29,6 +29,7 @@ export async function GET(
 }
 
 // ✅ Actualizar factura por ID (PUT /api/facturas/:id)
+// Se elimina la relación actual de detalles y se recrea con los datos enviados
 export async function PUT(
   req: Request,
   { params }: { params: { id: string } }
@@ -49,6 +50,7 @@ export async function PUT(
       data: {
         fecha: new Date(fecha),
         total,
+        // Se eliminan los detalles actuales y se crean los nuevos
         detalles: {
           deleteMany: {},
           create: detalles,
