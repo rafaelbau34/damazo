@@ -1,6 +1,6 @@
 "use client";
 
-import { Layout } from "app/layout/Layout";
+import { Layout } from "app/Layout/Layout";
 import { useState, useEffect } from "react";
 
 interface Cita {
