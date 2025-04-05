@@ -1,11 +1,13 @@
-import prisma from "app/lib/prisma";
+import prisma from 'app/lib/prisma'
 import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
     const citas = await prisma.cita.findMany({
       include: {
-        tratamientos: true, // Mantén solo relaciones existentes
+        tratamientos: true,
+        mascota: true,
+        veterinario: true, // Mantén solo relaciones existentes
       },
     });
     return NextResponse.json(citas, { status: 200 });

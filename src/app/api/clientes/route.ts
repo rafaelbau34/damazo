@@ -1,4 +1,4 @@
-import prisma from "app/lib/prisma";
+import prisma from 'app/lib/prisma'
 import { NextResponse } from "next/server";
 
 // ✅ Obtener todos los clientes (GET /api/clientes)

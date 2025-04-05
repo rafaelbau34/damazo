@@ -38,6 +38,13 @@ model Veterinario {
   telefono     String   @db.VarChar(15)
   email        String   @db.VarChar(100)
   citas        Cita[]
+  especialidades Especialidad[] @relation("VeterinarioEspecialidades")
+}
+
+model Especialidad {
+  id             Int          @id @default(autoincrement())
+  nombre         String
+  veterinarios   Veterinario[] @relation("VeterinarioEspecialidades")
 }
 
 model Cita {

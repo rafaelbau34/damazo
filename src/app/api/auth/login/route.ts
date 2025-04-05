@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import prisma from "app/lib/prisma";
 
+
 const SECRET = process.env.JWT_SECRET!;
 
 export async function POST(req: Request) {
