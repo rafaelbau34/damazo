@@ -13,7 +13,17 @@ import {
 import { Label } from "app/components/ui/label";
 import { Input } from "app/components/ui/input";
 import { Separator } from "app/components/ui/separator";
-import { PlusCircle, Trash2, PawPrint } from "lucide-react";
+import { PlusCircle, Trash2, PawPrint, ChevronUp } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "app/components/ui/alert-dialog";
 
 type Cliente = {
   id: number;
@@ -54,6 +64,13 @@ export default function ClientesMascotas() {
     "clientes"
   );
   const [isAddingClient, setIsAddingClient] = useState(false);
+  const [showPetForms, setShowPetForms] = useState<Record<number, boolean>>({});
+  const [deleteDialog, setDeleteDialog] = useState({
+    open: false,
+    type: "", // 'cliente' or 'mascota'
+    id: 0,
+    message: "",
+  });
 
   useEffect(() => {
     fetchClientes();
@@ -120,43 +137,86 @@ export default function ClientesMascotas() {
         ...prev,
         [clienteId]: { nombre: "", especie: "", raza: "", edad: 0 },
       }));
-
+      setShowPetForms((prev) => ({ ...prev, [clienteId]: false }));
       fetchClientes();
     } catch (error) {
       console.error(error);
     }
   }
 
-  async function handleDeleteCliente(id: number) {
-    if (
-      !confirm(
-        "¿Estás seguro de que deseas eliminar este cliente y todas sus mascotas?"
-      )
-    )
-      return;
+  function confirmDeleteCliente(id: number) {
+    setDeleteDialog({
+      open: true,
+      type: "cliente",
+      id,
+      message:
+        "¿Estás seguro de que deseas eliminar este cliente y todas sus mascotas?",
+    });
+  }
+
+  function confirmDeleteMascota(id: number) {
+    setDeleteDialog({
+      open: true,
+      type: "mascota",
+      id,
+      message: "¿Estás seguro de que deseas eliminar esta mascota?",
+    });
+  }
+
+  async function handleDeleteConfirmed() {
     try {
-      const res = await fetch(`/api/clientes/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Error al eliminar cliente");
+      if (deleteDialog.type === "cliente") {
+        const res = await fetch(`/api/clientes/${deleteDialog.id}`, {
+          method: "DELETE",
+        });
+        if (!res.ok) throw new Error("Error al eliminar cliente");
+      } else {
+        const res = await fetch(`/api/mascotas/${deleteDialog.id}`, {
+          method: "DELETE",
+        });
+        if (!res.ok) throw new Error("Error al eliminar mascota");
+      }
       fetchClientes();
     } catch (error) {
       console.error(error);
+    } finally {
+      setDeleteDialog({ open: false, type: "", id: 0, message: "" });
     }
   }
 
-  async function handleDeleteMascota(id: number) {
-    if (!confirm("¿Estás seguro de que deseas eliminar esta mascota?")) return;
-    try {
-      const res = await fetch(`/api/mascotas/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Error al eliminar mascota");
-      fetchClientes();
-    } catch (error) {
-      console.error(error);
-    }
-  }
+  const togglePetForm = (clienteId: number) => {
+    setShowPetForms((prev) => ({
+      ...prev,
+      [clienteId]: !prev[clienteId],
+    }));
+  };
 
   return (
     <Layout>
       <div className="p-6 max-w-7xl mx-auto">
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog
+          open={deleteDialog.open}
+          onOpenChange={(open) =>
+            setDeleteDialog((prev) => ({ ...prev, open }))
+          }
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirmar eliminación</AlertDialogTitle>
+              <AlertDialogDescription>
+                {deleteDialog.message}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDeleteConfirmed}>
+                Eliminar
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Gestión de Clientes y Mascotas</h1>
           <div className="flex space-x-2">
@@ -273,10 +333,7 @@ export default function ClientesMascotas() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {clientes.map((cliente) => (
-                <Card
-                  key={cliente.id}
-                  className="hover:shadow-md transition-shadow"
-                >
+                <Card key={cliente.id} className="flex flex-col h-full">
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <div>
@@ -291,13 +348,14 @@ export default function ClientesMascotas() {
                         variant="ghost"
                         size="icon"
                         className="text-destructive hover:text-destructive"
-                        onClick={() => handleDeleteCliente(cliente.id)}
+                        onClick={() => confirmDeleteCliente(cliente.id)}
                       >
                         <Trash2 size={16} />
                       </Button>
                     </div>
                   </CardHeader>
-                  <CardContent>
+
+                  <CardContent className="flex-1">
                     <div className="space-y-2">
                       <p className="text-sm">
                         <span className="font-medium">Teléfono:</span>{" "}
@@ -311,27 +369,39 @@ export default function ClientesMascotas() {
 
                     <Separator className="my-4" />
 
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
                         <h3 className="font-semibold">Mascotas</h3>
                         <Button
                           variant="ghost"
-                          className="text-primary h-8 px-2"
-                          onClick={() => setActiveTab("mascotas")}
+                          size="sm"
+                          className="text-primary gap-1"
+                          onClick={() => togglePetForm(cliente.id)}
                         >
-                          Ver todas
+                          {showPetForms[cliente.id] ? (
+                            <>
+                              <ChevronUp size={14} />
+                              Ocultar
+                            </>
+                          ) : (
+                            <>
+                              <PlusCircle size={14} />
+                              Agregar
+                            </>
+                          )}
                         </Button>
                       </div>
-                      {cliente.mascotas?.length ? (
-                        <ul className="space-y-2">
-                          {cliente.mascotas.map((mascota) => (
-                            <li
+
+                      <div className="space-y-2 max-h-40 overflow-y-auto">
+                        {cliente.mascotas?.length ? (
+                          cliente.mascotas.map((mascota) => (
+                            <div
                               key={mascota.id}
                               className="flex items-center justify-between p-2 bg-muted/50 rounded"
                             >
                               <div className="flex items-center gap-2">
                                 <PawPrint size={14} className="text-primary" />
-                                <span>
+                                <span className="text-sm">
                                   {mascota.nombre} ({mascota.especie},{" "}
                                   {mascota.edad} años)
                                 </span>
@@ -340,104 +410,107 @@ export default function ClientesMascotas() {
                                 variant="ghost"
                                 size="icon"
                                 className="h-6 w-6 text-destructive hover:text-destructive"
-                                onClick={() => handleDeleteMascota(mascota.id)}
+                                onClick={() => confirmDeleteMascota(mascota.id)}
                               >
                                 <Trash2 size={14} />
                               </Button>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="text-sm text-muted-foreground">
-                          No tiene mascotas registradas
-                        </p>
-                      )}
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-sm text-muted-foreground">
+                            No tiene mascotas registradas
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </CardContent>
-                  <CardFooter>
-                    <form
-                      onSubmit={(e) => handleSubmitMascota(e, cliente.id)}
-                      className="w-full space-y-3"
-                    >
-                      <h4 className="text-sm font-medium">Agregar Mascota</h4>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="col-span-2">
-                          <Input
-                            placeholder="Nombre"
-                            value={formMascota[cliente.id]?.nombre || ""}
-                            onChange={(e) =>
-                              setFormMascota((prev) => ({
-                                ...prev,
-                                [cliente.id]: {
-                                  ...prev[cliente.id],
-                                  nombre: e.target.value,
-                                },
-                              }))
-                            }
-                            required
-                            className="h-9" // Adjusted height instead of size="sm"
-                          />
+
+                  {showPetForms[cliente.id] && (
+                    <CardFooter className="border-t pt-4">
+                      <form
+                        onSubmit={(e) => handleSubmitMascota(e, cliente.id)}
+                        className="w-full space-y-3"
+                      >
+                        <h4 className="text-sm font-medium">Nueva Mascota</h4>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="col-span-2">
+                            <Input
+                              placeholder="Nombre"
+                              value={formMascota[cliente.id]?.nombre || ""}
+                              onChange={(e) =>
+                                setFormMascota((prev) => ({
+                                  ...prev,
+                                  [cliente.id]: {
+                                    ...prev[cliente.id],
+                                    nombre: e.target.value,
+                                  },
+                                }))
+                              }
+                              required
+                              className="h-9"
+                            />
+                          </div>
+                          <div>
+                            <Input
+                              placeholder="Especie"
+                              value={formMascota[cliente.id]?.especie || ""}
+                              onChange={(e) =>
+                                setFormMascota((prev) => ({
+                                  ...prev,
+                                  [cliente.id]: {
+                                    ...prev[cliente.id],
+                                    especie: e.target.value,
+                                  },
+                                }))
+                              }
+                              required
+                              className="h-9"
+                            />
+                          </div>
+                          <div>
+                            <Input
+                              placeholder="Raza"
+                              value={formMascota[cliente.id]?.raza || ""}
+                              onChange={(e) =>
+                                setFormMascota((prev) => ({
+                                  ...prev,
+                                  [cliente.id]: {
+                                    ...prev[cliente.id],
+                                    raza: e.target.value,
+                                  },
+                                }))
+                              }
+                              required
+                              className="h-9"
+                            />
+                          </div>
+                          <div>
+                            <Input
+                              type="number"
+                              placeholder="Edad"
+                              value={formMascota[cliente.id]?.edad || ""}
+                              onChange={(e) =>
+                                setFormMascota((prev) => ({
+                                  ...prev,
+                                  [cliente.id]: {
+                                    ...prev[cliente.id],
+                                    edad: Number(e.target.value),
+                                  },
+                                }))
+                              }
+                              required
+                              className="h-9"
+                            />
+                          </div>
+                          <div className="col-span-2">
+                            <Button type="submit" className="w-full h-9">
+                              Guardar Mascota
+                            </Button>
+                          </div>
                         </div>
-                        <div>
-                          <Input
-                            placeholder="Especie"
-                            value={formMascota[cliente.id]?.especie || ""}
-                            onChange={(e) =>
-                              setFormMascota((prev) => ({
-                                ...prev,
-                                [cliente.id]: {
-                                  ...prev[cliente.id],
-                                  especie: e.target.value,
-                                },
-                              }))
-                            }
-                            required
-                            className="h-9"
-                          />
-                        </div>
-                        <div>
-                          <Input
-                            placeholder="Raza"
-                            value={formMascota[cliente.id]?.raza || ""}
-                            onChange={(e) =>
-                              setFormMascota((prev) => ({
-                                ...prev,
-                                [cliente.id]: {
-                                  ...prev[cliente.id],
-                                  raza: e.target.value,
-                                },
-                              }))
-                            }
-                            required
-                            className="h-9"
-                          />
-                        </div>
-                        <div>
-                          <Input
-                            type="number"
-                            placeholder="Edad"
-                            value={formMascota[cliente.id]?.edad || ""}
-                            onChange={(e) =>
-                              setFormMascota((prev) => ({
-                                ...prev,
-                                [cliente.id]: {
-                                  ...prev[cliente.id],
-                                  edad: Number(e.target.value),
-                                },
-                              }))
-                            }
-                            required
-                            className="h-9"
-                          />
-                        </div>
-                        <div className="col-span-2">
-                          <Button type="submit" className="w-full h-9">
-                            Agregar Mascota
-                          </Button>
-                        </div>
-                      </div>
-                    </form>
-                  </CardFooter>
+                      </form>
+                    </CardFooter>
+                  )}
                 </Card>
               ))}
             </div>
@@ -485,7 +558,7 @@ export default function ClientesMascotas() {
                                     size="icon"
                                     className="h-8 w-8 text-destructive hover:text-destructive"
                                     onClick={() =>
-                                      handleDeleteMascota(mascota.id)
+                                      confirmDeleteMascota(mascota.id)
                                     }
                                   >
                                     <Trash2 size={14} />

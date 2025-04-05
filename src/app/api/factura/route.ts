@@ -2,6 +2,7 @@ import prisma from "app/lib/prisma";
 import { NextResponse } from "next/server";
 
 // ✅ Obtener todas las facturas (GET /api/facturas)
+// Se incluyen tanto el cliente como los detalles de la factura (modelo DetalleFactura)
 export async function GET() {
   try {
     const facturas = await prisma.factura.findMany({
@@ -17,13 +18,24 @@ export async function GET() {
 }
 
 // ✅ Crear una nueva factura (POST /api/facturas)
+// Se espera que en el body se reciba la estructura:
+// { clienteId, fecha, total, detalles: [{ tratamientoId, cantidad, subtotal }, ...] }
 export async function POST(req: Request) {
   try {
     const { clienteId, fecha, total, detalles } = await req.json();
 
-    if (!clienteId || !fecha || total === undefined || !detalles || !Array.isArray(detalles)) {
+    if (
+      !clienteId ||
+      !fecha ||
+      total === undefined ||
+      !detalles ||
+      !Array.isArray(detalles)
+    ) {
       return NextResponse.json(
-        { error: "Todos los campos son obligatorios y detalles debe ser un array" },
+        {
+          error:
+            "Todos los campos son obligatorios y detalles debe ser un array",
+        },
         { status: 400 }
       );
     }
@@ -43,8 +55,9 @@ export async function POST(req: Request) {
         clienteId,
         fecha: new Date(fecha),
         total,
+        // Aquí se crean los registros en el modelo DetalleFactura asociados a esta factura
         detalles: {
-          create: detalles, // Se espera que detalles sea un array de objetos con la estructura correcta
+          create: detalles,
         },
       },
       include: { cliente: true, detalles: true },

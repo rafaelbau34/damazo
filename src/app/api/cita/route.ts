@@ -5,14 +5,14 @@ export async function GET() {
   try {
     const citas = await prisma.cita.findMany({
       include: {
-        tratamientos: true,
         mascota: true,
-        veterinario: true, // Mantén solo relaciones existentes
+        veterinario: true,
+        tratamientos: true,
       },
     });
     return NextResponse.json(citas, { status: 200 });
   } catch (error) {
-    console.error("Error en GET /api/citas:", error);
+    console.error("Error al obtener citas:", error);
     return NextResponse.json(
       { error: "Error al obtener citas" },
       { status: 500 }
@@ -20,56 +20,40 @@ export async function GET() {
   }
 }
 
-// ✅ Obtener una cita por ID (GET /api/citas/[id])
-export async function GET_BY_ID(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const id = Number(params.id);
-    if (isNaN(id)) {
-      return NextResponse.json({ error: "ID inválido" }, { status: 400 });
-    }
-
-    const cita = await prisma.cita.findUnique({
-      where: { id },
-      include: { paciente: true, tratamientos: true },
-    });
-
-    if (!cita) {
-      return NextResponse.json(
-        { error: "Cita no encontrada" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({ id: cita.id, ...cita }, { status: 200 });
-  } catch {
-    return NextResponse.json(
-      { error: "Error al obtener cita" },
-      { status: 500 }
-    );
-  }
-}
-
-// ✅ Crear una nueva cita (POST /api/citas)
 export async function POST(req: Request) {
   try {
-    const { pacienteId, fecha, hora, motivo } = await req.json();
+    const { fecha, mascotaId, veterinarioId, motivo } = await req.json();
 
-    if (!pacienteId || !fecha || !hora) {
+    // Validación de campos requeridos
+    if (!mascotaId || !veterinarioId || !fecha) {
       return NextResponse.json(
-        { error: "Campos obligatorios faltantes" },
+        {
+          error: "Faltan campos obligatorios: mascotaId, veterinarioId, fecha",
+        },
         { status: 400 }
       );
     }
 
+    // Crear la cita
     const cita = await prisma.cita.create({
-      data: { pacienteId, fecha, hora, motivo },
+      data: {
+        fecha: new Date(fecha),
+        mascotaId: Number(mascotaId),
+        veterinarioId: Number(veterinarioId),
+        motivo: motivo || null,
+      },
+      include: {
+        mascota: true,
+        veterinario: true,
+      },
     });
 
-    return NextResponse.json({ id: cita.id, ...cita }, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "Error al crear cita" }, { status: 500 });
+    return NextResponse.json(cita, { status: 201 });
+  } catch (error) {
+    console.error("Error al crear cita:", error);
+    return NextResponse.json(
+      { error: "Error al crear cita. Verifica los IDs proporcionados." },
+      { status: 500 }
+    );
   }
 }

@@ -1,25 +1,20 @@
-"use client";
-
 import prisma from "app/lib/prisma";
 import { NextResponse } from "next/server";
 
-
-
-// ✅ Obtener veterinario por ID (GET /api/veterinarios/:id)
+// GET: Obtener un veterinario por ID
 export async function GET(
-  req: Request,
+  _req: Request,
   { params }: { params: { id: string } }
 ) {
   try {
     const id = Number(params.id);
+    if (isNaN(id)) {
+      return NextResponse.json({ error: "ID inválido" }, { status: 400 });
+    }
+
     const veterinario = await prisma.veterinario.findUnique({
       where: { id },
-      include: {
-        citas: {
-          include: { mascota: true }
-        },
-        especialidades: true
-      }
+      include: { citas: true },
     });
 
     if (!veterinario) {
@@ -29,9 +24,9 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(veterinario, { status: 200 });
+    return NextResponse.json(veterinario);
   } catch (error) {
-    console.error(error);
+    console.error("❌ Error GET veterinario:", error);
     return NextResponse.json(
       { error: "Error al obtener veterinario" },
       { status: 500 }
@@ -39,14 +34,18 @@ export async function GET(
   }
 }
 
-// ✅ Actualizar veterinario (PUT /api/veterinarios/:id)
+// PUT: Actualizar un veterinario por ID
 export async function PUT(
   req: Request,
   { params }: { params: { id: string } }
 ) {
   try {
     const id = Number(params.id);
-    const { nombre, apellido, matricula, telefono, email, especialidades } = await req.json();
+    if (isNaN(id)) {
+      return NextResponse.json({ error: "ID inválido" }, { status: 400 });
+    }
+
+    const data = await req.json();
 
     const veterinario = await prisma.veterinario.findUnique({ where: { id } });
     if (!veterinario) {
@@ -56,24 +55,14 @@ export async function PUT(
       );
     }
 
-    const veterinarioActualizado = await prisma.veterinario.update({
+    const actualizado = await prisma.veterinario.update({
       where: { id },
-      data: {
-        nombre,
-        apellido,
-        matricula,
-        telefono,
-        email,
-        especialidades: {
-          set: especialidades?.map((id: number) => ({ id })) || []
-        }
-      },
-      include: { especialidades: true }
+      data,
     });
 
-    return NextResponse.json(veterinarioActualizado, { status: 200 });
+    return NextResponse.json(actualizado);
   } catch (error) {
-    console.error(error);
+    console.error("❌ Error PUT veterinario:", error);
     return NextResponse.json(
       { error: "Error al actualizar veterinario" },
       { status: 500 }
@@ -81,13 +70,16 @@ export async function PUT(
   }
 }
 
-// ✅ Eliminar veterinario (DELETE /api/veterinarios/:id)
+// DELETE: Eliminar un veterinario por ID
 export async function DELETE(
-  req: Request,
+  _req: Request,
   { params }: { params: { id: string } }
 ) {
   try {
     const id = Number(params.id);
+    if (isNaN(id)) {
+      return NextResponse.json({ error: "ID inválido" }, { status: 400 });
+    }
 
     const veterinario = await prisma.veterinario.findUnique({ where: { id } });
     if (!veterinario) {
@@ -99,12 +91,9 @@ export async function DELETE(
 
     await prisma.veterinario.delete({ where: { id } });
 
-    return NextResponse.json(
-      { message: "Veterinario eliminado correctamente" },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: "Veterinario eliminado correctamente" });
   } catch (error) {
-    console.error(error);
+    console.error("❌ Error DELETE veterinario:", error);
     return NextResponse.json(
       { error: "Error al eliminar veterinario" },
       { status: 500 }
