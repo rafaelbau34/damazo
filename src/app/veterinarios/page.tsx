@@ -1,170 +1,174 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Input } from 'app/components/ui/input';
-import { Button } from 'app/components/ui/button';
-import { useToast } from 'app/components/ui/use-toast';
+import { useEffect, useState } from "react";
+import { Button } from "app/components/ui/button";
+import { Card, CardContent } from "app/components/ui/card";
+import { Layout } from "app/layout/Layout";
+import { Input } from "app/components/ui/input";
+import { Label } from "app/components/ui/label";
 
-interface Veterinario {
+type Veterinario = {
   id: number;
   nombre: string;
+  apellido: string;
   especialidad: string;
-}
+  telefono: string;
+  email: string;
+};
 
 export default function VeterinariosPage() {
   const [veterinarios, setVeterinarios] = useState<Veterinario[]>([]);
-  const [nombre, setNombre] = useState('');
-  const [especialidad, setEspecialidad] = useState('');
-  const [editandoId, setEditandoId] = useState<number | null>(null);
-  const { toast } = useToast();
+  const [isAddingVeterinario, setIsAddingVeterinario] = useState(false);
+  const [formVeterinario, setFormVeterinario] = useState({
+    nombre: "",
+    apellido: "",
+    especialidad: "",
+    telefono: "",
+    email: "",
+    
+  });
+  const [estado, setEstado] = useState<{
+    loading: boolean;
+    error: string | null;
+  }>({
+    loading: false,
+    error: null,
+  });
+
+  const fetchVeterinarios = async () => {
+    setEstado({ loading: true, error: null });
+    try {
+      const res = await fetch("/api/veterinarios");
+      if (!res.ok) throw new Error("Error al obtener veterinarios");
+      const data: Veterinario[] = await res.json();
+      setVeterinarios(data);
+      setEstado({ loading: false, error: null });
+    } catch (error) {
+      setEstado({ loading: false, error: "Hubo un problema al cargar los veterinarios." });
+      console.error(error);
+    }
+  };
+
+  const handleSubmitVeterinario = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("/api/veterinarios", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formVeterinario),
+      });
+
+      if (!res.ok) throw new Error("Error al agregar veterinario");
+
+      setFormVeterinario({
+        nombre: "",
+        apellido: "",
+        especialidad: "",
+        telefono: "",
+        email: "",
+        
+      });
+      setIsAddingVeterinario(false);
+      fetchVeterinarios();
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   useEffect(() => {
     fetchVeterinarios();
   }, []);
 
-  const fetchVeterinarios = async () => {
-    try {
-      const response = await fetch('/api/veterinarios');
-      const data = await response.json();
-      setVeterinarios(data);
-    } catch (error) {
-      console.error('Error al cargar veterinarios', error);
-    }
-  };
-
-  const handleAgregar = async () => {
-    if (!nombre || !especialidad) return;
-
-    try {
-      const response = await fetch('/api/veterinarios', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre, especialidad }),
-      });
-
-      if (response.ok) {
-        toast({
-          title: 'Éxito',
-          description: 'Veterinario agregado correctamente',
-        });
-        setNombre('');
-        setEspecialidad('');
-        fetchVeterinarios();
-      } else {
-        toast({
-          title: 'Error',
-          description: 'No se pudo agregar el veterinario',
-          variant: 'destructive',
-        });
-      }
-    } catch (error) {
-      console.error('Error al agregar veterinario', error);
-    }
-  };
-
-  const handleEditar = (veterinario: Veterinario) => {
-    setEditandoId(veterinario.id);
-    setNombre(veterinario.nombre);
-    setEspecialidad(veterinario.especialidad);
-  };
-
-  const handleGuardar = async () => {
-    if (editandoId === null) return;
-
-    try {
-      const response = await fetch(`/api/veterinarios/${editandoId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre, especialidad }),
-      });
-
-      if (response.ok) {
-        toast({
-          title: 'Actualizado',
-          description: 'Veterinario actualizado correctamente',
-        });
-        setEditandoId(null);
-        setNombre('');
-        setEspecialidad('');
-        fetchVeterinarios();
-      } else {
-        toast({
-          title: 'Error',
-          description: 'No se pudo actualizar el veterinario',
-          variant: 'destructive',
-        });
-      }
-    } catch (error) {
-      console.error('Error al actualizar veterinario', error);
-    }
-  };
-
-  const handleEliminar = async (id: number) => {
-    try {
-      const response = await fetch(`/api/veterinarios/${id}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        toast({
-          title: 'Eliminado',
-          description: 'Veterinario eliminado correctamente',
-        });
-        fetchVeterinarios();
-      } else {
-        toast({
-          title: 'Error',
-          description: 'No se pudo eliminar el veterinario',
-          variant: 'destructive',
-        });
-      }
-    } catch (error) {
-      console.error('Error al eliminar veterinario', error);
-    }
-  };
-
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Gestión de Veterinarios</h1>
-
-      <div className="flex gap-2 mb-4">
-        <Input
-          placeholder="Nombre"
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
-        />
-        <Input
-          placeholder="Especialidad"
-          value={especialidad}
-          onChange={(e) => setEspecialidad(e.target.value)}
-        />
-        {editandoId ? (
-          <Button onClick={handleGuardar}>Guardar</Button>
-        ) : (
-          <Button onClick={handleAgregar}>Agregar</Button>
-        )}
-      </div>
-
-      <ul>
-        {veterinarios.map((veterinario) => (
-          <li
-          key={veterinario.id}
-            className="flex justify-between items-center border p-2 rounded mb-2"
+    <Layout>
+      <div className="p-6 bg-gray-100 min-h-screen">
+        <h1 className="text-3xl font-bold text-center mb-6 text-red-600">Gestión de Veterinarios</h1>
+        
+        <div className="flex justify-center mb-4">
+          <Button
+            onClick={() => setIsAddingVeterinario(!isAddingVeterinario)}
+            className="bg-red-600 hover:bg-red-800 text-white px-4 py-2 rounded shadow-md"
           >
-            <span>
-              {veterinario.nombre} - {veterinario.especialidad}
-            </span>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => handleEditar(veterinario)}>
-                Editar
-              </Button>
-              <Button variant="destructive" onClick={() => handleEliminar(veterinario.id)}>
-                Eliminar
-              </Button>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
+            {isAddingVeterinario ? "Cancelar" : "Agregar Veterinario"}
+          </Button>
+        </div>
+
+        {isAddingVeterinario && (
+          <form
+            onSubmit={handleSubmitVeterinario}
+            className="bg-white p-6 rounded-lg shadow-md max-w-lg mx-auto"
+          >
+            <h2 className="text-xl font-semibold text-red-600 mb-4">Nuevo Veterinario</h2>
+            <Input
+              type="text"
+              placeholder="Nombre"
+              value={formVeterinario.nombre}
+              onChange={(e) => setFormVeterinario({ ...formVeterinario, nombre: e.target.value })}
+              className="border p-2 rounded w-full mb-2"
+              required
+            />
+            <Input
+              type="text"
+              placeholder="Apellido"
+              value={formVeterinario.apellido}
+              onChange={(e) => setFormVeterinario({ ...formVeterinario, apellido: e.target.value })}
+              className="border p-2 rounded w-full mb-2"
+              required
+            />
+            <Input
+              type="text"
+              placeholder="Especialidad"
+              value={formVeterinario.especialidad}
+              onChange={(e) => setFormVeterinario({ ...formVeterinario, especialidad: e.target.value })}
+              className="border p-2 rounded w-full mb-2"
+              required
+            />
+            <Input
+              type="text"
+              placeholder="Teléfono"
+              value={formVeterinario.telefono}
+              onChange={(e) => setFormVeterinario({ ...formVeterinario, telefono: e.target.value })}
+              className="border p-2 rounded w-full mb-2"
+              required
+            />
+            <Input
+              type="email"
+              placeholder="Email"
+              value={formVeterinario.email}
+              onChange={(e) => setFormVeterinario({ ...formVeterinario, email: e.target.value })}
+              className="border p-2 rounded w-full mb-2"
+              required
+            />
+            <Button
+              type="submit"
+              className="bg-red-600 hover:bg-red-800 text-white p-2 rounded w-full"
+            >
+              Guardar Veterinario
+            </Button>
+          </form>
+        )}
+
+        {estado.error && <p className="text-red-500 text-center mt-4">{estado.error}</p>}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+          {estado.loading ? (
+            <p className="text-gray-500 text-center w-full">Cargando veterinarios...</p>
+          ) : veterinarios.length === 0 ? (
+            <p className="text-gray-500 text-center w-full">No se encontraron veterinarios.</p>
+          ) : (
+            veterinarios.map((veterinario) => (
+              <Card key={veterinario.id} className="p-4 border rounded-lg shadow-md bg-white">
+                <CardContent>
+                  <h2 className="text-xl font-semibold text-red-600">{veterinario.nombre} {veterinario.apellido}</h2>
+                  <p className="text-gray-600">{veterinario.especialidad}</p>
+                  <p className="text-gray-500">Teléfono: {veterinario.telefono}</p>
+                  <p className="text-gray-500">Email: {veterinario.email}</p>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
+      </div>
+    </Layout>
   );
 }
