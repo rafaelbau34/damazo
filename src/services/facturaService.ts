@@ -19,8 +19,8 @@ export async function getFactura(id: number) {
 }
 
 // Crear una nueva factura
-// Se espera que 'data' tenga la estructura:
-// { clienteId: number, fecha: string, total: number, detalles: Array<{ tratamientoId, cantidad, subtotal }> }
+// Estructura esperada en 'data':
+// { clienteId, fecha, total, detalles: [{ tratamientoId, cantidad, subtotal }] }
 export async function createFactura(data: {
   clienteId: number;
   fecha: string;

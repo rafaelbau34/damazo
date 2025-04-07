@@ -1,8 +1,8 @@
 import prisma from "app/lib/prisma";
 import { NextResponse } from "next/server";
 
-// ✅ Obtener todas las facturas (GET /api/facturas)
-// Se incluyen tanto el cliente como los detalles de la factura (modelo DetalleFactura)
+// GET /api/factura
+// Devuelve todas las facturas, incluyendo cliente y detalles
 export async function GET() {
   try {
     const facturas = await prisma.factura.findMany({
@@ -17,9 +17,8 @@ export async function GET() {
   }
 }
 
-// ✅ Crear una nueva factura (POST /api/facturas)
-// Se espera que en el body se reciba la estructura:
-// { clienteId, fecha, total, detalles: [{ tratamientoId, cantidad, subtotal }, ...] }
+// POST /api/factura
+// Crea una nueva factura con sus detalles
 export async function POST(req: Request) {
   try {
     const { clienteId, fecha, total, detalles } = await req.json();
@@ -34,12 +33,13 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           error:
-            "Todos los campos son obligatorios y detalles debe ser un array",
+            "Todos los campos son obligatorios y 'detalles' debe ser un array",
         },
         { status: 400 }
       );
     }
 
+    // Verificar que el cliente exista
     const cliente = await prisma.cliente.findUnique({
       where: { id: clienteId },
     });
@@ -50,14 +50,14 @@ export async function POST(req: Request) {
       );
     }
 
+    // Crear la factura
     const nuevaFactura = await prisma.factura.create({
       data: {
         clienteId,
         fecha: new Date(fecha),
         total,
-        // Aquí se crean los registros en el modelo DetalleFactura asociados a esta factura
         detalles: {
-          create: detalles,
+          create: detalles, // Crea los detalles de la factura
         },
       },
       include: { cliente: true, detalles: true },

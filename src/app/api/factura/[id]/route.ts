@@ -1,23 +1,25 @@
 import prisma from "app/lib/prisma";
 import { NextResponse } from "next/server";
 
-// ✅ Obtener factura por ID (GET /api/facturas/:id)
-export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+// GET /api/factura/[id]
+export async function GET(req: Request, context: { params: { id: string } }) {
   try {
-    const id = Number(params.id);
+    const id = Number(context.params.id);
+    if (isNaN(id)) {
+      return NextResponse.json({ error: "ID inválido" }, { status: 400 });
+    }
+
     const factura = await prisma.factura.findUnique({
       where: { id },
       include: { cliente: true, detalles: true },
     });
 
-    if (!factura)
+    if (!factura) {
       return NextResponse.json(
         { error: "Factura no encontrada" },
         { status: 404 }
       );
+    }
 
     return NextResponse.json(factura, { status: 200 });
   } catch {
@@ -28,31 +30,38 @@ export async function GET(
   }
 }
 
-// ✅ Actualizar factura por ID (PUT /api/facturas/:id)
-// Se elimina la relación actual de detalles y se recrea con los datos enviados
-export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+// PUT /api/factura/[id]
+export async function PUT(req: Request, context: { params: { id: string } }) {
   try {
-    const id = Number(params.id);
+    const id = Number(context.params.id);
+    if (isNaN(id)) {
+      return NextResponse.json({ error: "ID inválido" }, { status: 400 });
+    }
+
     const { fecha, total, detalles } = await req.json();
+    if (!fecha || total === undefined || !Array.isArray(detalles)) {
+      return NextResponse.json(
+        { error: "Faltan campos o 'detalles' no es un array" },
+        { status: 400 }
+      );
+    }
 
     const factura = await prisma.factura.findUnique({ where: { id } });
-    if (!factura)
+    if (!factura) {
       return NextResponse.json(
         { error: "Factura no encontrada" },
         { status: 404 }
       );
+    }
 
+    // Actualizar la factura y sus detalles (eliminando los antiguos y creando los nuevos)
     const facturaActualizada = await prisma.factura.update({
       where: { id },
       data: {
         fecha: new Date(fecha),
         total,
-        // Se eliminan los detalles actuales y se crean los nuevos
         detalles: {
-          deleteMany: {},
+          deleteMany: {}, // Borra todos los detalles previos
           create: detalles,
         },
       },
@@ -68,28 +77,38 @@ export async function PUT(
   }
 }
 
-// ✅ Eliminar factura por ID (DELETE /api/facturas/:id)
+// DELETE /api/factura/[id]
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
-    const id = Number(params.id);
+    const id = Number(context.params.id);
+    if (isNaN(id)) {
+      return NextResponse.json({ error: "ID inválido" }, { status: 400 });
+    }
 
+    // Verificar si existe la factura
     const factura = await prisma.factura.findUnique({ where: { id } });
-    if (!factura)
+    if (!factura) {
       return NextResponse.json(
         { error: "Factura no encontrada" },
         { status: 404 }
       );
+    }
 
+    // Eliminar primero los detalles asociados a la factura
+    await prisma.detalleFactura.deleteMany({ where: { facturaId: id } });
+
+    // Ahora eliminar la factura
     await prisma.factura.delete({ where: { id } });
 
     return NextResponse.json(
       { message: "Factura eliminada correctamente" },
       { status: 200 }
     );
-  } catch {
+  } catch (error) {
+    console.error("Error al eliminar factura:", error);
     return NextResponse.json(
       { error: "Error al eliminar factura" },
       { status: 500 }
