@@ -1,28 +1,13 @@
 import prisma from "app/lib/prisma";
 import { NextResponse } from "next/server";
 
-// ✅ Obtener todas las citas (GET /api/citas)
-export async function GET() {
-  try {
-    const citas = await prisma.cita.findMany({
-      include: { mascota: true, veterinario: true, tratamientos: true },
-    });
-    return NextResponse.json(citas, { status: 200 });
-  } catch {
-    return NextResponse.json(
-      { error: "Error al obtener citas" },
-      { status: 500 }
-    );
-  }
-}
-
-// ✅ Obtener una cita por ID (GET /api/citas/[id])
+// Obtener una cita por ID (GET /api/cita/[id])
 export async function GET_BY_ID(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
-    const id = Number(params.id);
+    const id = Number(context.params.id);
     if (isNaN(id)) {
       return NextResponse.json({ error: "ID inválido" }, { status: 400 });
     }
@@ -52,7 +37,7 @@ export async function GET_BY_ID(
   }
 }
 
-// ✅ Crear una nueva cita (POST /api/citas)
+// Crear una nueva cita (POST /api/cita/[id])
 export async function POST(req: Request) {
   try {
     const { mascotaId, veterinarioId, fecha, motivo } = await req.json();
@@ -71,5 +56,66 @@ export async function POST(req: Request) {
     return NextResponse.json(cita, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Error al crear cita" }, { status: 500 });
+  }
+}
+
+// Actualizar una cita (PATCH /api/cita/[id])
+export async function PATCH(req: Request, context: { params: { id: string } }) {
+  try {
+    const id = Number(context.params.id);
+    if (isNaN(id)) {
+      return NextResponse.json({ error: "ID inválido" }, { status: 400 });
+    }
+    const data = await req.json();
+
+    const updatedCita = await prisma.cita.update({
+      where: { id },
+      data: {
+        fecha: data.fecha ? new Date(data.fecha) : undefined,
+        mascotaId: data.mascotaId ? Number(data.mascotaId) : undefined,
+        veterinarioId: data.veterinarioId
+          ? Number(data.veterinarioId)
+          : undefined,
+        motivo: data.motivo !== undefined ? data.motivo : undefined,
+      },
+      include: {
+        mascota: true,
+        veterinario: true,
+        tratamientos: true,
+      },
+    });
+    return NextResponse.json(updatedCita, { status: 200 });
+  } catch (error) {
+    console.error("Error al actualizar cita:", error);
+    return NextResponse.json(
+      { error: "Error al actualizar cita" },
+      { status: 500 }
+    );
+  }
+}
+
+// Eliminar una cita (DELETE /api/cita/[id])
+export async function DELETE(
+  req: Request,
+  context: { params: { id: string } }
+) {
+  try {
+    const id = Number(context.params.id);
+    if (isNaN(id)) {
+      return NextResponse.json({ error: "ID inválido" }, { status: 400 });
+    }
+    await prisma.cita.delete({
+      where: { id },
+    });
+    return NextResponse.json(
+      { message: "Cita eliminada correctamente" },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error al eliminar cita:", error);
+    return NextResponse.json(
+      { error: "Error al eliminar cita" },
+      { status: 500 }
+    );
   }
 }
