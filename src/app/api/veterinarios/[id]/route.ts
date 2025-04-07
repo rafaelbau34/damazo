@@ -4,8 +4,8 @@ import { NextResponse } from 'next/server';
 import prisma from 'app/lib/prisma'; // Asegúrate de tener una instancia de Prisma en esta ruta
 
 // Manejar la actualización de un veterinario
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function PUT(req: Request, context: { params: { id: string } }) {
+  const { id } = await context.params;
   const { nombre, apellido, especialidad, telefono, email } = await req.json();
 
   // Verificar que la ID sea un número válido
