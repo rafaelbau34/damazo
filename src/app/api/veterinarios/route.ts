@@ -5,7 +5,8 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     const veterinarios = await prisma.veterinario.findMany({
-      select: {  // Aquí cambia 'include' por 'select' para especificar qué campos deseas obtener
+      select: {
+        // Aquí cambia 'include' por 'select' para especificar qué campos deseas obtener
         id: true,
         nombre: true,
         apellido: true,
@@ -18,14 +19,9 @@ export async function GET() {
             id: true,
           },
         },
-        especialidades: {
-          select: {
-            id: true,
-          },
-        },
       },
     });
-    
+
     return NextResponse.json(veterinarios);
   } catch (error) {
     console.error("❌ Error GET veterinarios:", error);
@@ -41,9 +37,15 @@ export async function POST(req: Request) {
   try {
     const { nombre, apellido, especialidad, telefono, email } =
       await req.json();
-      console.log('Nuevo veterinario:', { nombre, apellido, especialidad, telefono, email });
+    console.log("Nuevo veterinario:", {
+      nombre,
+      apellido,
+      especialidad,
+      telefono,
+      email,
+    });
 
-    if (!nombre || !apellido || !especialidad || !telefono || !email ) {
+    if (!nombre || !apellido || !especialidad || !telefono || !email) {
       return NextResponse.json(
         { error: "Todos los campos son obligatorios" },
         { status: 400 }
