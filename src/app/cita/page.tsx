@@ -177,7 +177,14 @@ export default function CitasPage() {
                       control={methods.control}
                       name="mascotaId"
                       rules={{ required: true }}
-                      render={({ field }) => (
+                      render={({
+                        field,
+                      }: {
+                        field: {
+                          onChange: (value: string) => void;
+                          value: string;
+                        };
+                      }) => (
                         <Select
                           onValueChange={field.onChange}
                           value={field.value}
