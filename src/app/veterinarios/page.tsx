@@ -25,7 +25,6 @@ export default function VeterinariosPage() {
     especialidad: "",
     telefono: "",
     email: "",
-    
   });
   const [estado, setEstado] = useState<{
     loading: boolean;
@@ -35,6 +34,10 @@ export default function VeterinariosPage() {
     error: null,
   });
 
+  // Estado para saber si estamos editando un veterinario
+  const [editandoId, setEditandoId] = useState<number | null>(null);
+
+  // Obtener la lista de veterinarios
   const fetchVeterinarios = async () => {
     setEstado({ loading: true, error: null });
     try {
@@ -49,16 +52,20 @@ export default function VeterinariosPage() {
     }
   };
 
+  // Manejar el submit del formulario de agregar/actualizar veterinario
   const handleSubmitVeterinario = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch("/api/veterinarios", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formVeterinario),
-      });
+      const res = await fetch(
+        editandoId ? `/api/veterinarios/${editandoId}` : "/api/veterinarios",
+        {
+          method: editandoId ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formVeterinario),
+        }
+      );
 
-      if (!res.ok) throw new Error("Error al agregar veterinario");
+      if (!res.ok) throw new Error("Error al guardar veterinario");
 
       setFormVeterinario({
         nombre: "",
@@ -66,8 +73,8 @@ export default function VeterinariosPage() {
         especialidad: "",
         telefono: "",
         email: "",
-        
       });
+      setEditandoId(null);
       setIsAddingVeterinario(false);
       fetchVeterinarios();
     } catch (error) {
@@ -75,6 +82,29 @@ export default function VeterinariosPage() {
     }
   };
 
+  // Función para eliminar un veterinario
+  const handleDeleteVeterinario = async (id: number) => {
+    try {
+      const res = await fetch(`/api/veterinarios/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) throw new Error("Error al eliminar veterinario");
+
+      fetchVeterinarios();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // Función para editar un veterinario
+  const handleEditVeterinario = (veterinario: Veterinario) => {
+    setFormVeterinario(veterinario);
+    setEditandoId(veterinario.id);
+    setIsAddingVeterinario(true);
+  };
+
+  // Cargar veterinarios cuando el componente se monta
   useEffect(() => {
     fetchVeterinarios();
   }, []);
@@ -93,12 +123,15 @@ export default function VeterinariosPage() {
           </Button>
         </div>
 
+        {/* Formulario para agregar o actualizar veterinario */}
         {isAddingVeterinario && (
           <form
             onSubmit={handleSubmitVeterinario}
             className="bg-white p-6 rounded-lg shadow-md max-w-lg mx-auto"
           >
-            <h2 className="text-xl font-semibold text-red-600 mb-4">Nuevo Veterinario</h2>
+            <h2 className="text-xl font-semibold text-red-600 mb-4">
+              {editandoId ? "Actualizar Veterinario" : "Nuevo Veterinario"}
+            </h2>
             <Input
               type="text"
               placeholder="Nombre"
@@ -143,13 +176,14 @@ export default function VeterinariosPage() {
               type="submit"
               className="bg-red-600 hover:bg-red-800 text-white p-2 rounded w-full"
             >
-              Guardar Veterinario
+              {editandoId ? "Actualizar Veterinario" : "Guardar Veterinario"}
             </Button>
           </form>
         )}
 
         {estado.error && <p className="text-red-500 text-center mt-4">{estado.error}</p>}
 
+        {/* Mostrar veterinarios en tarjetas */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
           {estado.loading ? (
             <p className="text-gray-500 text-center w-full">Cargando veterinarios...</p>
@@ -163,6 +197,21 @@ export default function VeterinariosPage() {
                   <p className="text-gray-600">{veterinario.especialidad}</p>
                   <p className="text-gray-500">Teléfono: {veterinario.telefono}</p>
                   <p className="text-gray-500">Email: {veterinario.email}</p>
+
+                  <div className="mt-4 flex gap-2">
+                    <Button
+                      className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
+                      onClick={() => handleEditVeterinario(veterinario)}
+                    >
+                      Actualizar
+                    </Button>
+                    <Button
+                      className="bg-red-500 hover:bg-red-700 text-white px-3 py-1 rounded"
+                      onClick={() => handleDeleteVeterinario(veterinario.id)}
+                    >
+                      Eliminar
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ))

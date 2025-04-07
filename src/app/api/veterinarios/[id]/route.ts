@@ -1,102 +1,58 @@
-import prisma from "app/lib/prisma";
-import { NextResponse } from "next/server";
+// app/api/veterinarios/[id]/route.ts
 
-// GET: Obtener un veterinario por ID
-export async function GET(
-  _req: Request,
-  { params }: { params: { id: string } }
-) {
+import { NextResponse } from 'next/server';
+import prisma from 'app/lib/prisma'; // Asegúrate de tener una instancia de Prisma en esta ruta
+
+// Manejar la actualización de un veterinario
+export async function PUT(req: Request, { params }: { params: { id: string } }) {
+  const { id } = params;
+  const { nombre, apellido, especialidad, telefono, email } = await req.json();
+
+  // Verificar que la ID sea un número válido
+  const idNumber = Number(id);
+  if (isNaN(idNumber)) {
+    return NextResponse.json({ error: "ID inválido" }, { status: 400 });
+  }
+
   try {
-    const id = Number(params.id);
-    if (isNaN(id)) {
-      return NextResponse.json({ error: "ID inválido" }, { status: 400 });
-    }
-
-    const veterinario = await prisma.veterinario.findUnique({
-      where: { id },
-      include: { citas: true },
+    // Actualizar el veterinario en la base de datos
+    const updatedVeterinario = await prisma.veterinario.update({
+      where: { id: idNumber },
+      data: {
+        nombre,
+        apellido,
+        especialidad,
+        telefono,
+        email,
+      },
     });
 
-    if (!veterinario) {
-      return NextResponse.json(
-        { error: "Veterinario no encontrado" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json(veterinario);
+    return NextResponse.json(updatedVeterinario);
   } catch (error) {
-    console.error("❌ Error GET veterinario:", error);
-    return NextResponse.json(
-      { error: "Error al obtener veterinario" },
-      { status: 500 }
-    );
+    console.error(error);
+    return NextResponse.json({ error: "Error al actualizar veterinario" }, { status: 500 });
   }
 }
 
-// PUT: Actualizar un veterinario por ID
-export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const id = Number(params.id);
-    if (isNaN(id)) {
-      return NextResponse.json({ error: "ID inválido" }, { status: 400 });
-    }
+// Manejar la eliminación de un veterinario
+export async function DELETE(req: Request, context: { params : { id: string } }) {
+  const { id } = await context.params;
 
-    const data = await req.json();
-
-    const veterinario = await prisma.veterinario.findUnique({ where: { id } });
-    if (!veterinario) {
-      return NextResponse.json(
-        { error: "Veterinario no encontrado" },
-        { status: 404 }
-      );
-    }
-
-    const actualizado = await prisma.veterinario.update({
-      where: { id },
-      data,
-    });
-
-    return NextResponse.json(actualizado);
-  } catch (error) {
-    console.error("❌ Error PUT veterinario:", error);
-    return NextResponse.json(
-      { error: "Error al actualizar veterinario" },
-      { status: 500 }
-    );
+  // Verificar que la ID sea un número válido
+  const idNumber = Number(id);
+  if (isNaN(idNumber)) {
+    return NextResponse.json({ error: "ID inválido" }, { status: 400 });
   }
-}
 
-// DELETE: Eliminar un veterinario por ID
-export async function DELETE(
-  _req: Request,
-  { params }: { params: { id: string } }
-) {
   try {
-    const id = Number(params.id);
-    if (isNaN(id)) {
-      return NextResponse.json({ error: "ID inválido" }, { status: 400 });
-    }
-
-    const veterinario = await prisma.veterinario.findUnique({ where: { id } });
-    if (!veterinario) {
-      return NextResponse.json(
-        { error: "Veterinario no encontrado" },
-        { status: 404 }
-      );
-    }
-
-    await prisma.veterinario.delete({ where: { id } });
+    // Eliminar el veterinario de la base de datos
+    await prisma.veterinario.delete({
+      where: { id: idNumber },
+    });
 
     return NextResponse.json({ message: "Veterinario eliminado correctamente" });
   } catch (error) {
-    console.error("❌ Error DELETE veterinario:", error);
-    return NextResponse.json(
-      { error: "Error al eliminar veterinario" },
-      { status: 500 }
-    );
+    console.error(error);
+    return NextResponse.json({ error: "Error al eliminar veterinario" }, { status: 500 });
   }
 }

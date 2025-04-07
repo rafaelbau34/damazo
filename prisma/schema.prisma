@@ -28,6 +28,8 @@ model Mascota {
   clienteId Int
   cliente   Cliente  @relation(fields: [clienteId], references: [id])
   citas     Cita[]
+  veterinario  Veterinario? @relation(fields: [veterinarioId], references: [id], onDelete: Cascade)
+  veterinarioId Int?
 }
 
 model Veterinario {
@@ -39,6 +41,7 @@ model Veterinario {
   email        String   @db.VarChar(100)
   citas        Cita[]
   especialidades Especialidad[] @relation("VeterinarioEspecialidades")
+  mascotas   Mascota[]
 }
 
 model Especialidad {
