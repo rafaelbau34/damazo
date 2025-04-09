@@ -21,7 +21,7 @@ export default function AuthForm() {
     console.log(data);
     if (res.ok) {
       login(data.user, data.token);
-      router.push("/dashboard");
+      router.push("/");
     }
   };
 

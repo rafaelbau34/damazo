@@ -67,7 +67,7 @@ export default function ClientesMascotas() {
   const [showPetForms, setShowPetForms] = useState<Record<number, boolean>>({});
   const [deleteDialog, setDeleteDialog] = useState({
     open: false,
-    type: "", // 'cliente' or 'mascota'
+    type: "",
     id: 0,
     message: "",
   });
@@ -194,7 +194,6 @@ export default function ClientesMascotas() {
   return (
     <Layout>
       <div className="p-6 max-w-7xl mx-auto">
-        {/* Delete Confirmation Dialog */}
         <AlertDialog
           open={deleteDialog.open}
           onOpenChange={(open) =>
@@ -217,21 +216,27 @@ export default function ClientesMascotas() {
           </AlertDialogContent>
         </AlertDialog>
 
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Gestión de Clientes y Mascotas</h1>
-          <div className="flex space-x-2">
-            <Button
-              variant={activeTab === "clientes" ? "default" : "outline"}
-              onClick={() => setActiveTab("clientes")}
-            >
-              Clientes
-            </Button>
-            <Button
-              variant={activeTab === "mascotas" ? "default" : "outline"}
-              onClick={() => setActiveTab("mascotas")}
-            >
-              Mascotas
-            </Button>
+        <div className="p-6 max-w-7xl mx-auto pt-20">
+          {" "}
+          {/* Added pt-20 for top padding */}
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold">
+              Gestión de Clientes y Mascotas
+            </h1>
+            <div className="flex space-x-2">
+              <Button
+                variant={activeTab === "clientes" ? "default" : "outline"}
+                onClick={() => setActiveTab("clientes")}
+              >
+                Clientes
+              </Button>
+              <Button
+                variant={activeTab === "mascotas" ? "default" : "outline"}
+                onClick={() => setActiveTab("mascotas")}
+              >
+                Mascotas
+              </Button>
+            </div>
           </div>
         </div>
 
