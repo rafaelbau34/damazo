@@ -51,7 +51,7 @@ export default function DashboardPage() {
             </p>
           </div>
 
-          {/* Support Card */}
+          {/* Support Card xjaiuhwoiq */}
           <div className="bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-lg border border-amber-200">
             <div className="flex items-center justify-center mb-5">
               <div className="bg-red-100 p-3 rounded-full">
